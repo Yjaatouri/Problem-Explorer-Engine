@@ -56,6 +56,13 @@ importers:
       '@pe/workspace-index':
         specifier: workspace:*
         version: link:../workspace-index
+    devDependencies:
+      '@pe/provider-eslint':
+        specifier: workspace:*
+        version: link:../providers/eslint
+      '@pe/provider-tsc':
+        specifier: workspace:*
+        version: link:../providers/tsc
 
   packages/core:
     dependencies:

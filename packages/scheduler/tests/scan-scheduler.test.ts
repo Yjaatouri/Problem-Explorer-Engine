@@ -216,19 +216,30 @@ describe('ScanScheduler', () => {
     registry.dispose();
   });
 
-  it('overflows the bounded queue with an event, never an unbounded queue', () => {
+  it('overflows the bounded queue with an event, never an unbounded queue', async () => {
     const registry = new ProviderRegistry();
     const gate = deferred<void>();
-    const tsc = makeProvider({ id: 'tsc', gate });
+    const tsc = makeProvider({
+      id: 'tsc',
+      gate,
+      capabilities: { supportedConfigTypes: ['typescript', 'python', 'rust'] },
+    });
     registry.register(tsc.provider);
+    await waitFor(() => registry.getStatus('tsc')?.health === ProviderHealth.Ready);
     const scheduler = new ScanScheduler({ registry, queueSize: 2, idleWindowMs: 50 });
     const overflowed: string[] = [];
     scheduler.onQueueOverflow((event) => overflowed.push(event.job.id));
+    // The single medium slot is busy with the first job; the queue holds the
+    // next two distinct capabilities, and the crowder overflows the bound.
     scheduler.enqueue(plan({ capability: 'python', uris: [testUri('C:/proj/p1.py')] }));
     scheduler.enqueue(plan({ capability: 'rust', uris: [testUri('C:/proj/r1.rs')] }));
-    scheduler.enqueue(plan({ capability: 'go', uris: [testUri('C:/proj/g1.go')] }));
+    scheduler.enqueue(plan({ capability: 'typescript', uris: [testUri('C:/proj/t1.ts')] }));
+    scheduler.enqueue(plan({ capability: 'python', uris: [testUri('C:/proj/p2.py')] }));
     expect(overflowed).toHaveLength(1);
     expect(scheduler.queuedCount).toBe(2);
+    await waitFor(() => tsc.calls.length === 1);
+    gate.resolve();
+    await waitFor(() => scheduler.runningCount === 0);
     scheduler.dispose();
     registry.dispose();
   });

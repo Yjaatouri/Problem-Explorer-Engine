@@ -60,7 +60,7 @@ function makeUri(fsPath: string): Uri {
     authority: '',
     path: fsPath.replace(/\\/g, '/'),
     fsPath,
-    toString: () => `file://${fsPath.replace(/\\/g, '/')}`,
+    toString: () => `file:///${fsPath.replace(/\\/g, '/')}`,
     with: (change: { path?: string }) => makeUri(change.path ?? fsPath),
   };
 }

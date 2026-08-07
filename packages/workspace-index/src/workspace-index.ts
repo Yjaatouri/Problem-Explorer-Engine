@@ -100,7 +100,7 @@ export function fileUriFromPath(fsPath: string): Uri {
     .split('/')
     .map((segment) => encodeURIComponent(segment))
     .join('/')
-    .replace(/^(\/[A-Za-z])(%3A)/, (_m, drive: string) => drive.toLowerCase() + '%3A');
+    .replace(/^(\/[A-Za-z])(%3A|%3a|:)/, (_m, drive: string) => drive.toLowerCase() + '%3A');
   const uriString = `file://${encodedPath}`;
   const uri: Uri = {
     scheme: 'file',

@@ -20,6 +20,10 @@
     "@pe/impact-analyzer": "workspace:*",
     "@pe/workspace-index": "workspace:*"
   },
+  "devDependencies": {
+    "@pe/provider-eslint": "workspace:*",
+    "@pe/provider-tsc": "workspace:*"
+  },
   "publishConfig": {
     "access": "public"
   },

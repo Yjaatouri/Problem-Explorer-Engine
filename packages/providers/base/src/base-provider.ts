@@ -71,12 +71,18 @@ export interface BaseProviderOptions {
 
 function makeFileUri(fsPath: string): Uri {
   const pathValue = fsPath.replace(/\\/g, '/');
+  const withScheme = pathValue.startsWith('/') ? pathValue : `/${pathValue}`;
+  const encodedPath = withScheme
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+    .replace(/^(\/[A-Za-z])(%3A|%3a|:)/, (_m, drive: string) => drive.toLowerCase() + '%3A');
   const uri: Uri = {
     scheme: 'file',
     authority: '',
     path: pathValue,
     fsPath,
-    toString: () => `file://${pathValue}`,
+    toString: () => `file://${encodedPath}`,
     with: (change) => makeFileUri(change.path ?? fsPath),
   };
   return uri;

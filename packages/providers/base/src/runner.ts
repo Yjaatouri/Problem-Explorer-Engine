@@ -4,6 +4,7 @@
 // else works on strings. Handles Windows PATHEXT retries, output caps, and
 // timeouts, and reminds providers to call `disposeAll()` on shutdown.
 
+import { existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 
@@ -108,11 +109,14 @@ async function runChild(
 }
 
 /**
- * Execute `argv[0]` with the remaining args.
+ * Execute `argv[0]` with the remaining args (and cwd/env options).
  *
- * Windows note: `node:child_process` cannot resolve PATHEXT shims (e.g. a
- * `node_modules/.bin/tsc.cmd` referenced as `tsc`). When a bare name fails
- * with ENOENT on Windows, we retry with the `.cmd` suffix.
+ * Windows note: `node:child_process` cannot execute PATHEXT shims
+ * (e.g. a `node_modules/.bin/tsc.cmd` referenced as `tsc`) — CreateProcess
+ * does not apply PATHEXT. When a bare name fails with ENOENT on Windows we
+ * retry through `cmd.exe /d /s /c` with the `.cmd` shim, which is exactly
+ * what pnpm/npm ship in `.bin`. Providers therefore work identically on
+ * both platforms with zero configuration.
  */
 export async function runExecutable(
   argv: readonly string[],
@@ -131,10 +135,45 @@ export async function runExecutable(
 
   const result = await runChild(bin, args, options);
 
-  if (result.missing && process.platform === 'win32' && !/\.[a-z]+$/i.test(bin)) {
-    const shim = `${bin}.cmd`;
-    const retry = await runChild(shim, args, options);
-    return { ...retry, missing: retry.missing ? true : result.missing };
+  if (result.missing && process.platform === 'win32') {
+    // A bare name may be a PATH shim (node_modules/.bin/*.cmd).
+    if (onPath(bin)) {
+      const retry = await winCmdRun(`${bin}.cmd`, args, options);
+      if (!retry.missing) {
+        return retry;
+      }
+    }
   }
   return result;
+}
+
+function quoteWinArg(arg: string): string {
+  return /[\s"&^|]/.test(arg) ? `"${arg.replace(/"/g, '""')}"` : arg;
+}
+
+/** True when `bin` (or its .cmd shim) is resolvable from the PATH */
+function onPath(bin: string): boolean {
+  if (existsSync(bin)) {
+    return true;
+  }
+  const candidates = process.platform === 'win32' ? [`${bin}.cmd`, `${bin}.exe`, bin] : [bin];
+  for (const dir of (process.env.PATH ?? '').split(';')) {
+    for (const candidate of candidates) {
+      if (dir.length > 0 && existsSync(`${dir}\\${candidate}`)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Run through cmd.exe: the only reliable way to execute `.cmd` shims. */
+async function winCmdRun(
+  shim: string,
+  args: readonly string[],
+  options: RunOptions,
+): Promise<RunResult> {
+  const comspec = process.env.COMSPEC ?? 'cmd.exe';
+  const command = [shim, ...args].map(quoteWinArg).join(' ');
+  return runChild(comspec, ['/d', '/s', '/c', command], options);
 }

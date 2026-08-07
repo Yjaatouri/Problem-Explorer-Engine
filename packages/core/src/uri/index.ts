@@ -64,11 +64,11 @@ export function normalizeUriKey(uri: Uri): string {
 
   let key = input;
 
-  // Normalize Windows drive letter casing: file:///C%3A/... or file:///C:/...
+  // Normalize Windows drive letter casing + encoding: file:///C%3A/..., file:///c%3A/...,
+  // file:///C:/... all fold to file:///c%3A/... (the vscode.Uri canonical form).
   key = key.replace(
     /^(file:\/\/\/)([A-Za-z])(%3A|%3a|:)/,
-    (_match: string, prefix: string, drive: string, colon: string) =>
-      prefix + drive.toLowerCase() + (colon === ':' ? ':' : '%3A'),
+    (_match: string, prefix: string, drive: string) => prefix + drive.toLowerCase() + '%3A',
   );
 
   // Strip trailing slashes (but never the scheme-root slash)

@@ -10,7 +10,7 @@ function testUri(fsPath: string): Uri {
     authority: '',
     path: normalized,
     fsPath,
-    toString: () => `file://${normalized}`,
+    toString: () => `file:///${normalized}`,
     with: (change) => testUri(change.path ?? fsPath),
   };
 }

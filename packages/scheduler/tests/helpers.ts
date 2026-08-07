@@ -7,7 +7,7 @@ import type { Provider, ProviderCapabilities, ScanContext, ScanResult, Uri } fro
 export function testUri(fsPath: string): Uri {
   const normalized = fsPath.replace(/\\/g, '/');
   const withScheme = normalized.startsWith('/') ? normalized : `/${normalized}`;
-  const uriString = `file://${withScheme}`;
+  const uriString = `file:///${withScheme}`;
   return {
     scheme: 'file',
     authority: '',

@@ -71,6 +71,8 @@ export class ScanScheduler {
   private lastFinishedMs = 0;
   private idleTimer: ReturnType<typeof setTimeout> | undefined;
   private pumping = false;
+  /** A pump was requested while one was in flight — re-run after it ends (§7.4.4). */
+  private repumpPending = false;
   private disposed = false;
 
   constructor(options: ScanSchedulerOptions) {
@@ -95,6 +97,7 @@ export class ScanScheduler {
   /** Event: idle/scanning snapshot with running + queued counts. */
   readonly onScanStateChanged = this.stateEmitter.on.bind(this.stateEmitter);
 
+  /** A provider health change can unblock queued jobs — re-pump (§5.5). */
   /** Accept a plan from the ImpactAnalyzer (§7.4.3: merge, don't duplicate). */
   enqueue(plan: ScanPlan): void {
     if (this.disposed) {
@@ -205,43 +208,59 @@ export class ScanScheduler {
   }
 
   private pump(): void {
-    if (this.pumping || this.disposed) {
+    if (this.pumping) {
+      this.repumpPending = true;
       return;
     }
     this.pumping = true;
     try {
-      for (;;) {
-        const job = this.queue.peekHighestPriority();
-        if (job === undefined) {
-          break;
-        }
-        if (job.priority === 'periodic') {
-          if (!this.isIdleForPeriodic()) {
-            this.armIdleWatch(); // one idle-watch timer (§7.4.4)
-            break;
-          }
-        }
-        if (this.runningCapabilities.has(job.capability)) {
-          break; // one running job per capability (§7.4.3: no duplicate work)
-        }
-        const provider = this.readyProviderFor(job.capability);
-        if (provider === undefined) {
-          // Health may have drifted since registration — re-check and wait (§5.5).
-          void this.registry.healthCheckAll();
-          break;
-        }
-        const cost = provider.capabilities.cost;
-        if (!this.hasFreeSlot(cost)) {
-          break;
-        }
-        this.queue.remove(job.id);
-        this.allocateSlot(cost);
-        this.runningCapabilities.add(job.capability);
-        this.emitState();
-        void this.run(job, provider.id, cost);
-      }
+      this.drainQueue();
     } finally {
       this.pumping = false;
+      if (this.repumpPending) {
+        this.repumpPending = false;
+        this.pump();
+      }
+    }
+  }
+
+  private drainQueue(): void {
+    for (;;) {
+      const job = this.queue.peekHighestPriority();
+      if (job === undefined) {
+        break;
+      }
+      if (job.priority === 'periodic') {
+        if (!this.isIdleForPeriodic()) {
+          this.armIdleWatch(); // one idle-watch timer (§7.4.4)
+          break;
+        }
+      }
+      if (this.runningCapabilities.has(job.capability)) {
+        break; // one running job per capability (§7.4.3: no duplicate work)
+      }
+      const provider = this.readyProviderFor(job.capability);
+      if (provider === undefined) {
+        const candidates = this.registry.getByCapability(job.capability);
+        if (candidates.length === 0) {
+          // Nothing can ever run this job — drop it so it never starves others (§7.2.2).
+          this.queue.remove(job.id);
+          continue;
+        }
+        // Health may have drifted since registration — re-check and wait (§5.5).
+        void this.registry.healthCheckAll();
+        break;
+      }
+      const cost = provider.capabilities.cost;
+      if (!this.hasFreeSlot(cost)) {
+        console.error('[probe] drain: no free slot for', cost);
+        break;
+      }
+      this.queue.remove(job.id);
+      this.allocateSlot(cost);
+      this.runningCapabilities.add(job.capability);
+      this.emitState();
+      void this.run(job, provider.id, cost);
     }
   }
 

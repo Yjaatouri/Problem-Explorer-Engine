@@ -49,7 +49,7 @@ describe('core package', () => {
         'file:///c%3A/Users/test/file.ts',
       );
       expect(normalizeUriKey(uri('file:///C:/Users/test/file.ts'))).toBe(
-        'file:///c:/Users/test/file.ts',
+        'file:///c%3A/Users/test/file.ts',
       );
       expect(normalizeUriKey(uri('file:///D%3A/project/src/file.ts'))).toBe(
         'file:///d%3A/project/src/file.ts',

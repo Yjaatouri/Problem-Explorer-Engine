@@ -11,9 +11,10 @@ import { DiagnosticCache, ImpactAnalyzer } from '@pe/impact-analyzer';
 import { ProviderRegistry, ScanScheduler } from '@pe/scheduler';
 import { ProblemStore } from '@pe/store';
 import { WorkspaceIndex } from '@pe/workspace-index';
-import { ProviderHealth, TypedEventEmitter } from '@pe/core';
+import { ProviderHealth, TypedEventEmitter, normalizeUriKey } from '@pe/core';
 import type {
   ConfigType,
+  Diagnostic,
   Disposable,
   EngineConfig,
   Event,
@@ -42,6 +43,27 @@ export interface DiagnosticsAPIOptions {
   readonly config?: EngineConfig;
 }
 
+const EXTENSION_CAPABILITY: Record<string, ConfigType> = {
+  '.ts': 'typescript',
+  '.tsx': 'typescript',
+  '.mts': 'typescript',
+  '.cts': 'typescript',
+  '.js': 'javascript',
+  '.jsx': 'javascript',
+  '.mjs': 'javascript',
+  '.cjs': 'javascript',
+  '.py': 'python',
+  '.pyi': 'python',
+};
+
+function extensionCapability(uri: Uri): ConfigType | undefined {
+  const slash = uri.path.lastIndexOf('/');
+  const file = slash >= 0 ? uri.path.slice(slash) : uri.path;
+  const dot = file.lastIndexOf('.');
+  if (dot < 0) return undefined;
+  return EXTENSION_CAPABILITY[file.slice(dot).toLowerCase()];
+}
+
 const PRIORITY_BY_SCAN_TYPE: Record<ScanType, ScanPriority> = {
   startup: 'startup',
   save: 'save',
@@ -57,6 +79,7 @@ export class DiagnosticsAPI {
   private readonly registry: ProviderRegistry;
   private readonly scheduler: ScanScheduler;
   private readonly workspaceRoot: Uri;
+  private readonly realtimeProviderId: string | undefined;
   private readonly providerStatusEmitter = new TypedEventEmitter<ProviderStatusChangeEvent>();
   private readonly subscriptions: Disposable[] = [];
 
@@ -75,6 +98,8 @@ export class DiagnosticsAPI {
     for (const provider of options.providers ?? []) {
       this.registry.register(provider);
     }
+    const realtime = this.registry.all().find((provider) => provider.capabilities.realtime);
+    this.realtimeProviderId = realtime?.id;
     this.scheduler = new ScanScheduler({
       registry: this.registry,
       maxConcurrency: options.config?.maxConcurrency,
@@ -152,6 +177,22 @@ export class DiagnosticsAPI {
     this.analyzer.onFileChanged(fileUri, stats.mtimeMs, stats.size);
   }
 
+  /** Editor-pushed diagnostics for a file (e.g. from VS Code). Applied through the same store gate as scans.
+   *  Ownership: when no scanner is (yet) Ready for the file's capability, the realtime provider takes
+   *  ownership — its problems are the only ones the user can see. As soon as a scanning provider
+   *  health-checks Ready and runs, ownership transfers per §9.3 and editor pushes become gated. */
+  reportEditorDiagnostics(uri: Uri, diagnostics: readonly Diagnostic[]): void {
+    const providerId = this.realtimeProviderId;
+    if (providerId === undefined) {
+      return;
+    }
+    const capability = extensionCapability(uri);
+    const owner =
+      capability !== undefined ? (this.bestOwnerFor(capability) ?? providerId) : providerId;
+    this.store.setDiagnostics(providerId, uri, diagnostics);
+    this.store.recordOwner(uri, owner);
+  }
+
   /** Full rescan of the workspace; results treated as fresh (§7.2). */
   async rescanAll(): Promise<void> {
     this.cache.invalidateAll();
@@ -209,11 +250,21 @@ export class DiagnosticsAPI {
     // capability owns the scanned paths (tier desc, then registration order),
     // not necessarily the provider that happened to run this job.
     const owner = this.bestOwnerFor(event.job.capability);
+    const reported = new Set((event.result.files ?? []).map((file) => normalizeUriKey(file.uri)));
     for (const file of event.result.files ?? []) {
       this.store.setDiagnostics(event.providerId, file.uri, file.diagnostics);
       this.store.recordOwner(file.uri, owner);
       this.cache.recordResult(file.uri, event.providerId);
       this.index.markScanned(file.uri, event.providerId);
+    }
+    // A file the job scanned but the tool did not report is clean now:
+    // clear the previous findings so fixes actually disappear (§7.2).
+    for (const uri of event.job.uris ?? []) {
+      if (!reported.has(normalizeUriKey(uri))) {
+        this.store.setDiagnostics(event.providerId, uri, []);
+        this.cache.recordResult(uri, event.providerId);
+        this.index.markScanned(uri, event.providerId);
+      }
     }
   }
 
