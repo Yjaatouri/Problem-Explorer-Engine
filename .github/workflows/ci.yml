@@ -75,6 +75,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Tests resolve @pe/* through dist (§ 3.3); each job is a fresh
+      # checkout, so the engine must be built here — not just in `build`.
+      - run: pnpm build
       - run: pnpm test
 
   test-integration:
@@ -90,6 +93,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build
       - run: pnpm test:integration
 
   version:
