@@ -11,6 +11,9 @@
       "require": "./dist/index.js"
     }
   },
+  "scripts": {
+    "typecheck:tests": "tsc -p tsconfig.tests.json"
+  },
   "dependencies": {
     "jsonschema": "^1.5.0"
   },

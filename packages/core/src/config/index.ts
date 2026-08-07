@@ -49,7 +49,7 @@ export function mergeWithDefaults<T>(config: Partial<T>, schema: Schema): T {
 }
 
 /** Merge defaults, then validate the result. Used by providers for their config. */
-export function validateProviderConfig<T extends Record<string, unknown>>(
+export function validateProviderConfig<T extends object>(
   userConfig: Partial<T>,
   schema: Schema,
 ): T {

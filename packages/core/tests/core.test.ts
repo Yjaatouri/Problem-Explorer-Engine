@@ -94,6 +94,11 @@ describe('core package', () => {
   });
 
   describe('config validation', () => {
+    interface TestConfig {
+      enabled: boolean;
+      timeout: number;
+    }
+
     const schema = {
       $id: 'test-provider',
       type: 'object',
@@ -104,30 +109,30 @@ describe('core package', () => {
     };
 
     it('passes valid config through', () => {
-      const result = validateConfig({ enabled: false }, schema);
+      const result = validateConfig<TestConfig>({ enabled: false }, schema);
       expect(result.enabled).toBe(false);
     });
 
     it('throws ConfigError on invalid config', () => {
-      expect(() => validateConfig({ enabled: 'yes' }, schema)).toThrow(ConfigError);
+      expect(() => validateConfig<TestConfig>({ enabled: 'yes' }, schema)).toThrow(ConfigError);
       expect(() =>
         validateConfig({ unknown: 1 }, { type: 'object', additionalProperties: false }),
       ).toThrow(ConfigError);
     });
 
     it('merges with defaults, user values win', () => {
-      const result = mergeWithDefaults({ timeout: 60_000 }, schema);
+      const result = mergeWithDefaults<TestConfig>({ timeout: 60_000 }, schema);
       expect(result.enabled).toBe(true);
       expect(result.timeout).toBe(60_000);
     });
 
     it('mergeWithDefaults ignores explicit undefined', () => {
-      const result = mergeWithDefaults({ enabled: undefined }, schema);
+      const result = mergeWithDefaults<TestConfig>({ enabled: undefined }, schema);
       expect(result.enabled).toBe(true);
     });
 
     it('validateProviderConfig merges then validates', () => {
-      const result = validateProviderConfig({}, schema);
+      const result = validateProviderConfig<TestConfig>({}, schema);
       expect(result.enabled).toBe(true);
       expect(result.timeout).toBe(30_000);
     });
