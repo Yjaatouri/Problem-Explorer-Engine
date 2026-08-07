@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { Uri } from '../src/types';
-import { normalizeUriKey, getParentKey, clearUriKeyCache, LRUCache } from '../src/uri';
-import { validateConfig, mergeWithDefaults, validateProviderConfig } from '../src/config';
-import { TypedEventEmitter, createEvent, type Event } from '../src/events';
+import type { Uri } from '../src/types/index.js';
+import { normalizeUriKey, getParentKey, clearUriKeyCache, LRUCache } from '../src/uri/index.js';
+import { validateConfig, mergeWithDefaults, validateProviderConfig } from '../src/config/index.js';
+import { TypedEventEmitter, createEvent, type Event } from '../src/events/index.js';
 import {
   ConfigError,
   ProviderError,
@@ -12,7 +12,7 @@ import {
   ok,
   err,
   type Result,
-} from '../src/errors';
+} from '../src/errors/index.js';
 import {
   ProblemSeverity,
   ConfidenceTier,
@@ -22,7 +22,7 @@ import {
   type Cost,
   type ScanPlan,
   type ScanPriority,
-} from '../src/types';
+} from '../src/types/index.js';
 
 /** Minimal Uri-shaped object for tests (structural match, no vscode) */
 function uri(s: string): Uri {

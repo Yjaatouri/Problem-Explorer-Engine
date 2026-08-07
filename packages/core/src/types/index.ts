@@ -186,3 +186,56 @@ export interface ScanJobFailedEvent {
   readonly job: ScanJob;
   readonly error: Error;
 }
+
+/** A single problem report produced by a provider for one file (line/column 0-based) */
+export interface Diagnostic {
+  readonly line: number;
+  readonly column: number;
+  readonly severity: ProblemSeverity;
+  readonly message: string;
+  /** e.g. 'tsc', 'ESLint:no-unused-vars', 'ruff:E501' */
+  readonly source: string;
+  readonly code?: string;
+}
+
+/** Read model returned by ProblemStore queries (alias of ProblemState) */
+export type ProblemSummary = ProblemState;
+
+/** Running totals across the whole store */
+export interface ProblemTotals {
+  readonly errors: number;
+  readonly warnings: number;
+  readonly info: number;
+}
+
+/** A file change detected by the WorkspaceIndex */
+export interface FileChange {
+  readonly kind: 'add' | 'change' | 'remove';
+  readonly uri: Uri;
+  readonly size?: number;
+  readonly modifiedMs?: number;
+}
+
+/** File change batch emitted by the WorkspaceIndex */
+export interface FileChangeEvent {
+  readonly changes: readonly FileChange[];
+}
+
+/** Fired when a provider's diagnostics for a file were applied to the store */
+export interface DiagnosticsChangedEvent {
+  readonly uri: Uri;
+  readonly providerId: string;
+  readonly diagnostics: readonly Diagnostic[];
+}
+
+/** Fired when running totals changed */
+export interface TotalsChangedEvent {
+  readonly totals: ProblemTotals;
+}
+
+/** Fired when the current owner of a path changed */
+export interface OwnershipChangedEvent {
+  readonly uri: Uri;
+  readonly providerId: string | undefined;
+  readonly previousProviderId: string | undefined;
+}

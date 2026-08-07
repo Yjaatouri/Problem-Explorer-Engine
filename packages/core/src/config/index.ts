@@ -1,7 +1,7 @@
 // Configuration validation using JSON Schema (jsonschema).
 
 import { Validator, type Schema } from 'jsonschema';
-import { ConfigError } from '../errors';
+import { ConfigError } from '../errors/index.js';
 
 /** Validate `config` against `schema`; throws ConfigError on failure. */
 export function validateConfig<T>(config: unknown, schema: Schema): T {

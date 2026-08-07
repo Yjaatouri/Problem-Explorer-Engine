@@ -51,7 +51,11 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1
 
-  packages/impact-analyzer: {}
+  packages/impact-analyzer:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/provider-sdk: {}
 
@@ -67,9 +71,17 @@ importers:
 
   packages/scheduler: {}
 
-  packages/store: {}
+  packages/store:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
 
-  packages/workspace-index: {}
+  packages/workspace-index:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 

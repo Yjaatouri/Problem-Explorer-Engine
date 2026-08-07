@@ -2,7 +2,7 @@
 // All operations are pure string work on canonical URI strings — no `vscode`,
 // no filesystem access. `Uri.toString()` is the canonical map key everywhere.
 
-import type { Uri } from '../types';
+import type { Uri } from '../types/index.js';
 
 /** Simple LRU cache (generic; used for URI key normalization) */
 export class LRUCache<K, V> {
@@ -67,7 +67,7 @@ export function normalizeUriKey(uri: Uri): string {
   // Normalize Windows drive letter casing: file:///C%3A/... or file:///C:/...
   key = key.replace(
     /^(file:\/\/\/)([A-Za-z])(%3A|%3a|:)/,
-    (_match, prefix: string, drive: string, colon: string) =>
+    (_match: string, prefix: string, drive: string, colon: string) =>
       prefix + drive.toLowerCase() + (colon === ':' ? ':' : '%3A'),
   );
 
