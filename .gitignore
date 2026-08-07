@@ -1,0 +1,61 @@
+# ===== Node / pnpm =====
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tgz
+
+# ===== Build outputs =====
+dist/
+out/
+build/
+*.tsbuildinfo
+*.vsix
+*.vscodeignore
+
+# ===== Test / coverage =====
+coverage/
+.nyc_output/
+.vitest-cache/
+test-results/
+junit.xml
+
+# ===== Changesets =====
+# Keep config + README, ignore generated changeset entries
+# (uncomment the next line if you want to ignore individual changeset entries too)
+# .changeset/*.md
+
+# ===== Editor / IDE =====
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== Env / secrets =====
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ===== Logs =====
+logs/
+*.log
+
+# ===== Private context (NOT committed) =====
+# Private reference manual for maintainers / agents — never publish
+agentRead.md
+PROJECT_CONTEXT.md
+.opencode/
+.claude/
+.aider*
+
+# ===== Misc =====
+.tmp/
+tmp/
+.cache/
+*.tmp
