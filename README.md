@@ -1,8 +1,12 @@
 # Problem Explorer Engine
 
-A platform-agnostic **workspace diagnostics engine** — a reusable, provider-driven platform
-that discovers, scans, and aggregates diagnostics (errors, warnings, info) across a workspace,
-consumable by editor extensions, CLI tools, CI runners, AI assistants, and dashboards.
+**Problem Explorer Engine is a fast, extensible workspace diagnostics engine that powers editors, IDEs, AI assistants, CI pipelines, and developer tools from a single diagnostics platform.**
+
+[![License: MIT](https://img.shields.io/github/license/Yjaatouri/Problem-Explorer-Engine)](./LICENSE)
+[![npm](https://img.shields.io/npm/v/@pe/api)](https://www.npmjs.com/package/@pe/api)
+[![pnpm](https://img.shields.io/badge/pnpm-11.20.0-F6921E)](https://pnpm.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6)](https://www.typescriptlang.org)
+[![CI](https://github.com/Yjaatouri/Problem-Explorer-Engine/actions/workflows/ci.yml/badge.svg)](https://github.com/Yjaatouri/Problem-Explorer-Engine/actions)
 
 > **Status: WIP — pre-1.0.0.** Scaffolding in progress. Packages are not yet published.
 
@@ -21,6 +25,40 @@ that shows per-file problem counts in the explorer) into a standalone product:
   assistant, and a dashboard.
 - **Publishable** — distributed as `@pe/*` npm packages, consumed like a library.
 
+## Why
+
+Most editors, extensions, AI tools, dashboards, and CI systems implement their own
+diagnostics pipeline — each from scratch, each tied to its host, each incompatible with
+the rest.
+
+Problem Explorer Engine provides one reusable engine that every tool can consume instead
+of rebuilding the same infrastructure.
+
+## Who is this for?
+
+- VS Code extension authors (or any editor/IDE)
+- AI coding tools that need workspace-wide problem awareness
+- CI systems that want consistent lint/typecheck reporting
+- Dashboards and telemetry that aggregate problem counts
+- CLI utilities that scan and report diagnostics
+
+## Goals / Non-goals
+
+**Goals**
+
+- Fast diagnostics with event-driven invalidation
+- Editor-agnostic core
+- Extensible providers via a public SDK
+- A reusable, stable public API
+
+**Non-goals**
+
+- Replace language servers
+- Compile projects
+- Become a build system
+
+---
+
 ## Repositories
 
 | Repo | Contents | Status |
@@ -28,8 +66,6 @@ that shows per-file problem counts in the explorer) into a standalone product:
 | `problem-explorer-engine` | **This repo** — the engine monorepo | Active |
 | `problem-explorer-vscode` | VS Code extension (Problem Explorer v2.0), depends on `@pe/api` | Planned |
 | `problem-explorer-examples` | Node / CLI / VS Code / AI / Dashboard examples | Future |
-
----
 
 ## Packages
 
@@ -52,6 +88,29 @@ packages are workspace-only. All public packages share a single version (changes
 | `packages/providers/vscode-realtime` | `@pe/provider-vscode-realtime` | **public** | VS Code realtime diagnostics adapter |
 
 ## Architecture at a glance
+
+**How a problem makes it from the filesystem to the consumer:**
+
+```
+Workspace
+   │  files change (save, add, remove)
+   ▼
+Workspace Index ──► owns discovery, emits change events
+   │
+   ▼
+Scheduler ──► dispatches scans by capability (never provider names)
+   │
+   ▼
+Providers ──► isolated, health-checked, never walk the filesystem
+   │
+   ▼
+Problem Store ──► gated writes, current truth, running totals
+   │
+   ▼
+Consumers ──► extensions, CLI, CI, AI, dashboards
+```
+
+**Dependency graph:**
 
 ```
 core ─► store ─► scheduler ─► api ── (public consumer surface)
@@ -99,20 +158,20 @@ scheduled with concurrency slots 4/2/1 — cheap scans parallelize, expensive sc
 
 ## Roadmap
 
-| # | Milestone | Status |
-|---|---|---|
-| M1 | Foundation — monorepo, CI green, all packages compile | **In progress** |
-| M2 | Storage & Index — ProblemStore, DiagnosticCache, WorkspaceIndex | Planned |
-| M3 | Orchestration — Registry, Scheduler, DiagnosticsAPI | Planned |
-| M4 | Providers — tsc, eslint, vscode-realtime run standalone | Planned |
-| M5 | Extension Migration — swap Problem Explorer v1 internals | Planned |
-| M6 | Architecture Proof — add Ruff with zero engine changes | Planned |
-| M7 | Performance Validation — 10k/50k files | Planned |
-| M8 | Release — engine v1.0.0 | Planned |
+| Milestone | Status |
+|---|---|
+| Foundation — monorepo, CI green, all packages compile | **In progress** |
+| Storage & Index — ProblemStore, DiagnosticCache, WorkspaceIndex | Planned |
+| Orchestration — Registry, Scheduler, DiagnosticsAPI | Planned |
+| Providers — tsc, eslint, vscode-realtime run standalone | Planned |
+| Migration — swap Problem Explorer v1 internals | Planned |
+| Architecture Proof — add Ruff with zero engine changes | Planned |
+| Performance — validate at 10k/50k files | Planned |
+| Release — engine v1.0.0 | Planned |
 
 ## Quick start
 
-> Stub until packages are built — M1 is in progress.
+> Stub until packages are built — Foundation is in progress.
 
 ```bash
 pnpm install
