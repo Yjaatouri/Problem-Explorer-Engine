@@ -1,0 +1,37 @@
+{
+  "name": "problem-explorer-engine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Platform-agnostic workspace diagnostics engine — @pe/* monorepo",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:integration": "pnpm -r --if-present run test:integration",
+    "check:deps": "node scripts/check-dependency-graph.mjs",
+    "clean": "rimraf \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
+    "changeset": "changeset",
+    "version:packages": "changeset version",
+    "release": "pnpm publish -r --access public --no-git-checks"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  }
+}

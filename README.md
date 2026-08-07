@@ -14,7 +14,7 @@
 
 ## What it is
 
-The engine extracts the diagnostics pipeline from *Problem Explorer v1* (a VS Code extension
+The engine extracts the diagnostics pipeline from _Problem Explorer v1_ (a VS Code extension
 that shows per-file problem counts in the explorer) into a standalone product:
 
 - **Editor-agnostic** — zero runtime dependency on VS Code. A generic `Uri` interface keeps
@@ -61,11 +61,11 @@ of rebuilding the same infrastructure.
 
 ## Repositories
 
-| Repo | Contents | Status |
-|---|---|---|
-| `problem-explorer-engine` | **This repo** — the engine monorepo | Active |
-| `problem-explorer-vscode` | VS Code extension (Problem Explorer v2.0), depends on `@pe/api` | Planned |
-| `problem-explorer-examples` | Node / CLI / VS Code / AI / Dashboard examples | Future |
+| Repo                        | Contents                                                        | Status  |
+| --------------------------- | --------------------------------------------------------------- | ------- |
+| `problem-explorer-engine`   | **This repo** — the engine monorepo                             | Active  |
+| `problem-explorer-vscode`   | VS Code extension (Problem Explorer v2.0), depends on `@pe/api` | Planned |
+| `problem-explorer-examples` | Node / CLI / VS Code / AI / Dashboard examples                  | Future  |
 
 ## Packages
 
@@ -73,20 +73,20 @@ All packages are `@pe/*`-scoped. **Public** packages are published to npm; **int
 packages are workspace-only. All public packages share a single version (changesets
 `fixed` mode) — see [Versioning](#versioning).
 
-| Package | npm name | Public | Purpose |
-|---|---|---|---|
-| `packages/core` | `@pe/core` | internal | Types, `Uri` interface, config validation, events, errors, `Result` |
-| `packages/store` | `@pe/store` | internal | `ProblemStore` — current diagnostic state, gated writes, totals |
-| `packages/workspace-index` | `@pe/workspace-index` | internal | Filesystem discovery owner: file list, mtimes, project roots |
-| `packages/impact-analyzer` | `@pe/impact-analyzer` | internal | ImpactAnalyzer + DiagnosticCache — converts events into minimal scan plans |
-| `packages/scheduler` | `@pe/scheduler` | internal | Provider registry, scan scheduler, capability-based queue |
-| `packages/api` | `@pe/api` | **public** | The consumer surface — `DiagnosticsAPI` + stable types |
-| `packages/provider-sdk` | `@pe/provider-sdk` | **public** | The contract external provider authors code against |
-| `packages/providers/base` | `@pe/provider-base` | **public** | `BaseScannerProvider` — common config, spawning, lifecycle |
-| `packages/providers/tsc` | `@pe/provider-tsc` | **public** | `tsc --noEmit` scanner |
-| `packages/providers/eslint` | `@pe/provider-eslint` | **public** | `eslint --format=json` scanner |
-| `packages/providers/ruff` | `@pe/provider-ruff` | **public** | `ruff check --output-format=json` scanner |
-| `packages/providers/vscode-realtime` | `@pe/provider-vscode-realtime` | **public** | VS Code realtime diagnostics adapter |
+| Package                              | npm name                       | Public     | Purpose                                                                    |
+| ------------------------------------ | ------------------------------ | ---------- | -------------------------------------------------------------------------- |
+| `packages/core`                      | `@pe/core`                     | internal   | Types, `Uri` interface, config validation, events, errors, `Result`        |
+| `packages/store`                     | `@pe/store`                    | internal   | `ProblemStore` — current diagnostic state, gated writes, totals            |
+| `packages/workspace-index`           | `@pe/workspace-index`          | internal   | Filesystem discovery owner: file list, mtimes, project roots               |
+| `packages/impact-analyzer`           | `@pe/impact-analyzer`          | internal   | ImpactAnalyzer + DiagnosticCache — converts events into minimal scan plans |
+| `packages/scheduler`                 | `@pe/scheduler`                | internal   | Provider registry, scan scheduler, capability-based queue                  |
+| `packages/api`                       | `@pe/api`                      | **public** | The consumer surface — `DiagnosticsAPI` + stable types                     |
+| `packages/provider-sdk`              | `@pe/provider-sdk`             | **public** | The contract external provider authors code against                        |
+| `packages/providers/base`            | `@pe/provider-base`            | **public** | `BaseScannerProvider` — common config, spawning, lifecycle                 |
+| `packages/providers/tsc`             | `@pe/provider-tsc`             | **public** | `tsc --noEmit` scanner                                                     |
+| `packages/providers/eslint`          | `@pe/provider-eslint`          | **public** | `eslint --format=json` scanner                                             |
+| `packages/providers/ruff`            | `@pe/provider-ruff`            | **public** | `ruff check --output-format=json` scanner                                  |
+| `packages/providers/vscode-realtime` | `@pe/provider-vscode-realtime` | **public** | VS Code realtime diagnostics adapter                                       |
 
 ## Architecture at a glance
 
@@ -114,7 +114,7 @@ Problem Store ──► gated writes, current truth, running totals
 Consumers ──► extensions, CLI, CI, AI, dashboards
 ```
 
-The scheduler never decides *what* to scan — only *when*. A README.md save produces no
+The scheduler never decides _what_ to scan — only _when_. A README.md save produces no
 plan and the scheduler never wakes; a `package.json` change produces one workspace plan
 per affected capability; a `file.py` save produces one file plan for Python only.
 
@@ -143,7 +143,7 @@ core
 ## Architectural rules
 
 1. **Never modify core packages for a provider** — improve the provider abstraction instead.
-2. **The scheduler never knows provider names** — it schedules *capabilities* (test-enforced).
+2. **The scheduler never knows provider names** — it schedules _capabilities_ (test-enforced).
 3. **The cache never becomes a second store** — scan-memory is internal; consumers read the store.
 4. **The workspace index owns discovery** — providers never walk the filesystem.
 5. **The engine never crashes** — providers are isolated; failures become health transitions.
@@ -161,28 +161,28 @@ core
 
 ## Scan model
 
-| Scan type | Trigger |
-|---|---|
-| `Startup` | Engine activation / workspace open |
-| `Save` | File save (debounced, per file) |
-| `Manual` | Consumer command |
-| `Periodic` | Idle timer, lowest priority |
+| Scan type  | Trigger                            |
+| ---------- | ---------------------------------- |
+| `Startup`  | Engine activation / workspace open |
+| `Save`     | File save (debounced, per file)    |
+| `Manual`   | Consumer command                   |
+| `Periodic` | Idle timer, lowest priority        |
 
 Scans are classified by **cost** (`cheap` <500ms, `medium` 0.5–3s, `expensive` >3s) and
 scheduled with concurrency slots 4/2/1 — cheap scans parallelize, expensive scans serialize.
 
 ## Roadmap
 
-| Milestone | Status |
-|---|---|
-| Foundation — monorepo, CI green, all packages compile | **In progress** |
-| Storage & Index — ProblemStore, DiagnosticCache, WorkspaceIndex | Planned |
-| Orchestration — Registry, Scheduler, DiagnosticsAPI | Planned |
-| Providers — tsc, eslint, vscode-realtime run standalone | Planned |
-| Migration — swap Problem Explorer v1 internals | Planned |
-| Architecture Proof — add Ruff with zero engine changes | Planned |
-| Performance — validate at 10k/50k files | Planned |
-| Release — engine v1.0.0 | Planned |
+| Milestone                                                       | Status          |
+| --------------------------------------------------------------- | --------------- |
+| Foundation — monorepo, CI green, all packages compile           | **In progress** |
+| Storage & Index — ProblemStore, DiagnosticCache, WorkspaceIndex | Planned         |
+| Orchestration — Registry, Scheduler, DiagnosticsAPI             | Planned         |
+| Providers — tsc, eslint, vscode-realtime run standalone         | Planned         |
+| Migration — swap Problem Explorer v1 internals                  | Planned         |
+| Architecture Proof — add Ruff with zero engine changes          | Planned         |
+| Performance — validate at 10k/50k files                         | Planned         |
+| Release — engine v1.0.0                                         | Planned         |
 
 ## Quick start
 

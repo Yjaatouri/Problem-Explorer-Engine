@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@pe/api",
+      "@pe/provider-sdk",
+      "@pe/provider-base",
+      "@pe/provider-tsc",
+      "@pe/provider-eslint",
+      "@pe/provider-ruff",
+      "@pe/provider-vscode-realtime"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@pe/core", "@pe/store", "@pe/scheduler", "@pe/workspace-index", "@pe/impact-analyzer"]
+}

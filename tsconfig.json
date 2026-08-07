@@ -1,0 +1,48 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/store" },
+    { "path": "./packages/scheduler" },
+    { "path": "./packages/workspace-index" },
+    { "path": "./packages/impact-analyzer" },
+    { "path": "./packages/api" },
+    { "path": "./packages/provider-sdk" },
+    { "path": "./packages/providers/base" },
+    { "path": "./packages/providers/tsc" },
+    { "path": "./packages/providers/eslint" },
+    { "path": "./packages/providers/ruff" },
+    { "path": "./packages/providers/vscode-realtime" }
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@pe/core": ["packages/core/src/index.ts"],
+      "@pe/store": ["packages/store/src/index.ts"],
+      "@pe/scheduler": ["packages/scheduler/src/index.ts"],
+      "@pe/workspace-index": ["packages/workspace-index/src/index.ts"],
+      "@pe/impact-analyzer": ["packages/impact-analyzer/src/index.ts"],
+      "@pe/api": ["packages/api/src/index.ts"],
+      "@pe/provider-sdk": ["packages/provider-sdk/src/index.ts"],
+      "@pe/provider-base": ["packages/providers/base/src/index.ts"],
+      "@pe/provider-tsc": ["packages/providers/tsc/src/index.ts"],
+      "@pe/provider-eslint": ["packages/providers/eslint/src/index.ts"],
+      "@pe/provider-ruff": ["packages/providers/ruff/src/index.ts"],
+      "@pe/provider-vscode-realtime": ["packages/providers/vscode-realtime/src/index.ts"]
+    }
+  }
+}
