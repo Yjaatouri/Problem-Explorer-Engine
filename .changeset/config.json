@@ -17,5 +17,12 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@pe/core", "@pe/store", "@pe/scheduler", "@pe/workspace-index", "@pe/impact-analyzer"]
+  "ignore": [
+    "@pe/core",
+    "@pe/store",
+    "@pe/scheduler",
+    "@pe/workspace-index",
+    "@pe/impact-analyzer",
+    "@pe/api"
+  ]
 }
