@@ -78,6 +78,7 @@ packages are workspace-only. All public packages share a single version (changes
 | `packages/core` | `@pe/core` | internal | Types, `Uri` interface, config validation, events, errors, `Result` |
 | `packages/store` | `@pe/store` | internal | `ProblemStore` — current diagnostic state, gated writes, totals |
 | `packages/workspace-index` | `@pe/workspace-index` | internal | Filesystem discovery owner: file list, mtimes, project roots |
+| `packages/impact-analyzer` | `@pe/impact-analyzer` | internal | ImpactAnalyzer + DiagnosticCache — converts events into minimal scan plans |
 | `packages/scheduler` | `@pe/scheduler` | internal | Provider registry, scan scheduler, capability-based queue |
 | `packages/api` | `@pe/api` | **public** | The consumer surface — `DiagnosticsAPI` + stable types |
 | `packages/provider-sdk` | `@pe/provider-sdk` | **public** | The contract external provider authors code against |
@@ -98,7 +99,10 @@ Workspace
 Workspace Index ──► owns discovery, emits change events
    │
    ▼
-Scheduler ──► dispatches scans by capability (never provider names)
+Impact Analyzer ──► what changed? which capabilities care? → minimal ScanPlan
+   │
+   ▼
+Scheduler ──► when / concurrency / ordering / cancellation only
    │
    ▼
 Providers ──► isolated, health-checked, never walk the filesystem
@@ -110,23 +114,31 @@ Problem Store ──► gated writes, current truth, running totals
 Consumers ──► extensions, CLI, CI, AI, dashboards
 ```
 
+The scheduler never decides *what* to scan — only *when*. A README.md save produces no
+plan and the scheduler never wakes; a `package.json` change produces one workspace plan
+per affected capability; a `file.py` save produces one file plan for Python only.
+
 **Dependency graph:**
 
 ```
-core ─► store ─► scheduler ─► api ── (public consumer surface)
- │      ▲            ▲
- └──────┴──── workspace-index
-
-provider-sdk (type-only dep on core)
- └─ provider-base ── provider-{tsc,eslint,ruff,vscode-realtime}
+core
+ ├─► store
+ ├─► workspace-index
+ ├─► impact-analyzer ── emits ScanPlans ──► scheduler ─► api ── (public surface)
+ │      (event → minimal work, owns the cache;        ▲
+ │       wired to the scheduler in @pe/api)           │
+ └─► provider-sdk (type-only)                         │
+      └─ provider-base ── provider-{tsc,eslint,ruff,vscode-realtime}
 ```
 
-- **Internal** (`core`, `store`, `workspace-index`, `scheduler`) — private, free to break.
+- **Internal** (`core`, `store`, `workspace-index`, `impact-analyzer`, `scheduler`) — private, free to break.
 - **Public** (`api`, `provider-sdk`, `providers/*`) — published, stable.
 - The dependency graph is **machine-enforced** by `pnpm check:deps` in CI. Forbidden edges
   (e.g. `scheduler → api`, any provider → internal packages, any runtime `vscode` dep) fail the build.
 - `api` is a leaf: nothing depends on it internally. Providers sit **outside** the core and
   depend only on the SDK — adding a language never touches engine internals.
+- All change-intelligence lives in exactly one place (`@pe/impact-analyzer`); the scheduler
+  is purely mechanical so it never changes when you add providers or config-file kinds.
 
 ## Architectural rules
 
@@ -143,6 +155,9 @@ provider-sdk (type-only dep on core)
 11. **TTL (24h) is a safety net, not a strategy** — staleness is event-driven.
 12. **Ownership is computed, not configured** — capability + workspace + availability,
     with `ConfidenceTier` (WorkspaceScanner=3 > Realtime=2 > Fallback=1) and deterministic tie-breaks.
+13. **ImpactAnalyzer owns WHAT to scan; scheduler owns WHEN/HOW** — the scheduler accepts
+    only `ScanPlan`s and never infers scope from events. All change-intelligence lives in
+    one place, so adding providers or config-file kinds never touches the scheduler.
 
 ## Scan model
 
