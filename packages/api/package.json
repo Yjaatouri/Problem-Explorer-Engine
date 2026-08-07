@@ -10,6 +10,16 @@
       "import": "./dist/index.js"
     }
   },
+  "scripts": {
+    "typecheck:tests": "tsc -p tsconfig.tests.json"
+  },
+  "dependencies": {
+    "@pe/core": "workspace:*",
+    "@pe/store": "workspace:*",
+    "@pe/scheduler": "workspace:*",
+    "@pe/impact-analyzer": "workspace:*",
+    "@pe/workspace-index": "workspace:*"
+  },
   "publishConfig": {
     "access": "public"
   },

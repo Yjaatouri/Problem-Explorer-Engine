@@ -39,7 +39,23 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.43)(supports-color@7.2.0)
 
-  packages/api: {}
+  packages/api:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pe/impact-analyzer':
+        specifier: workspace:*
+        version: link:../impact-analyzer
+      '@pe/scheduler':
+        specifier: workspace:*
+        version: link:../scheduler
+      '@pe/store':
+        specifier: workspace:*
+        version: link:../store
+      '@pe/workspace-index':
+        specifier: workspace:*
+        version: link:../workspace-index
 
   packages/core:
     dependencies:
@@ -56,6 +72,9 @@ importers:
       '@pe/core':
         specifier: workspace:*
         version: link:../core
+      '@pe/workspace-index':
+        specifier: workspace:*
+        version: link:../workspace-index
 
   packages/provider-sdk: {}
 
@@ -69,7 +88,14 @@ importers:
 
   packages/providers/vscode-realtime: {}
 
-  packages/scheduler: {}
+  packages/scheduler:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pe/store':
+        specifier: workspace:*
+        version: link:../store
 
   packages/store:
     dependencies:

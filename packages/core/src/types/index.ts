@@ -4,6 +4,8 @@
 // engine's own structural match to `vscode.Uri` — consumers pass real
 // vscode.Uri objects (structurally compatible) or construct their own.
 
+import type { Schema } from 'jsonschema';
+
 /** Engine URI — structural match to `vscode.Uri`. Never import `vscode` here. */
 export interface Uri {
   readonly scheme: string;
@@ -64,6 +66,8 @@ export type ScanPriority = 'manual' | 'save' | 'periodic' | 'startup';
 
 /** Provider health states */
 export enum ProviderHealth {
+  /** Registered but not yet health-checked (§11.1 initial state) */
+  Unknown = 'unknown',
   Ready = 'ready',
   Unavailable = 'unavailable',
   MissingDependency = 'missing_dependency',
@@ -115,6 +119,7 @@ export interface ScanPlan {
 export interface ScanJob {
   readonly id: string;
   readonly capability: ConfigType;
+  readonly scope: 'file' | 'workspace';
   readonly type: ScanType;
   readonly uris: readonly Uri[];
   readonly priority: ScanPriority;
@@ -122,9 +127,18 @@ export interface ScanJob {
   readonly enqueuedMs: number;
 }
 
+/** Diagnostics produced by one scan for one file (part of a ScanResult) */
+export interface ScannedFileDiagnostics {
+  readonly uri: Uri;
+  readonly diagnostics: readonly Diagnostic[];
+}
+
 /** Scan result from a provider */
 export interface ScanResult {
+  /** Every URI the scan covered, regardless of outcome. */
   readonly changedUris: readonly Uri[];
+  /** Per-file diagnostics. Entries are merged into the store, then released. */
+  readonly files?: readonly ScannedFileDiagnostics[];
   readonly errors?: readonly ScanErrorInfo[];
 }
 
@@ -175,17 +189,34 @@ export interface ProviderStatusChangeEvent {
   readonly status: ProviderStatus;
 }
 
-/** Scan job completion event */
+/** Scan job completion event (providerId records which provider actually ran) */
 export interface ScanJobCompleteEvent {
   readonly job: ScanJob;
+  readonly providerId: string;
   readonly result: ScanResult;
 }
 
 /** Scan job failure event */
 export interface ScanJobFailedEvent {
   readonly job: ScanJob;
+  readonly providerId: string;
   readonly error: Error;
 }
+
+/** Queue overflow: a job was dropped because the queue hit its bound (§7.4.5) */
+export interface ScanQueueOverflowEvent {
+  readonly job: ScanJob;
+}
+
+/** Scan activity snapshot for consumers (idle/scanning, running + queued counts) */
+export interface ScanStateEvent {
+  readonly phase: 'idle' | 'scanning';
+  readonly running: number;
+  readonly queued: number;
+}
+
+/** Public alias — DiagnosticsAPI's `onProblemsChanged` payload (§5.7) */
+export type ProblemChangeEvent = DiagnosticsChangedEvent;
 
 /** A single problem report produced by a provider for one file (line/column 0-based) */
 export interface Diagnostic {
@@ -238,4 +269,47 @@ export interface OwnershipChangedEvent {
   readonly uri: Uri;
   readonly providerId: string | undefined;
   readonly previousProviderId: string | undefined;
+}
+
+/** Provider configuration object (validated against the provider's configSchema) */
+export type ProviderConfig = Record<string, unknown>;
+
+/** Result of a health check (§11.2) */
+export interface HealthResult {
+  readonly health: ProviderHealth;
+  readonly message?: string;
+}
+
+/**
+ * The provider contract. Lives in @pe/core because both the scheduler and the
+ * public API depend on it; @pe/provider-sdk re-exports it for authors (§12).
+ */
+export interface Provider {
+  /** Unique, kebab-case: 'tsc', 'eslint', 'ruff' */
+  readonly id: string;
+  readonly displayName: string;
+  readonly capabilities: ProviderCapabilities;
+  /** JSON Schema validated via @pe/core config utilities */
+  readonly configSchema: Schema;
+  readonly defaultConfig: ProviderConfig;
+  healthCheck(): Promise<HealthResult>;
+  /** Receives URIs — never walks the filesystem (§6.4) */
+  scan(context: ScanContext): Promise<ScanResult>;
+  dispose?(): void;
+}
+
+/** Engine-wide tuning knobs (all optional; defaults per §7.4/§8) */
+export interface EngineConfig {
+  /** Per-file save debounce window (default 300ms). */
+  readonly debounceMs?: number;
+  /** Global batch flush window (default 500ms). */
+  readonly batchMs?: number;
+  /** Periodic jobs run only if no job finished within this window (default 5000ms). */
+  readonly idleWindowMs?: number;
+  /** Scheduler queue bound (default 100). */
+  readonly queueSize?: number;
+  /** Per-scan timeout (default 30000ms). */
+  readonly scanTimeoutMs?: number;
+  /** Concurrency slots per cost class (default cheap 4, medium 2, expensive 1). */
+  readonly maxConcurrency?: Partial<Record<Cost, number>>;
 }

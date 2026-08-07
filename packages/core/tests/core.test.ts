@@ -262,8 +262,9 @@ describe('core package', () => {
 
     it('ProviderHealth values', () => {
       const all = Object.values(ProviderHealth);
-      expect(all).toHaveLength(6);
+      expect(all).toHaveLength(7);
       expect(all).toContain('missing_dependency');
+      expect(all).toContain('unknown'); // initial state before first check (§11.1)
     });
 
     it('Cost union values', () => {

@@ -77,6 +77,16 @@ export class DiagnosticCache {
     this.entries.delete(normalizeUriKey(uri));
   }
 
+  /** Invalidate every entry under a directory prefix (e.g. a project root, §7.2). */
+  invalidatePrefix(uri: Uri): void {
+    const prefix = normalizeUriKey(uri) + '/';
+    for (const key of this.entries.keys()) {
+      if (key.startsWith(prefix)) {
+        this.entries.delete(key);
+      }
+    }
+  }
+
   /** Invalidate everything (e.g. workspace root change). */
   invalidateAll(): void {
     this.entries.clear();
