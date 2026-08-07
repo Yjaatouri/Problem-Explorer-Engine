@@ -4,6 +4,7 @@
 // engine's own structural match to `vscode.Uri` — consumers pass real
 // vscode.Uri objects (structurally compatible) or construct their own.
 
+export type { Schema } from 'jsonschema';
 import type { Schema } from 'jsonschema';
 
 /** Engine URI — structural match to `vscode.Uri`. Never import `vscode` here. */

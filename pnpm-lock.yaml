@@ -76,17 +76,50 @@ importers:
         specifier: workspace:*
         version: link:../workspace-index
 
-  packages/provider-sdk: {}
+  packages/provider-sdk:
+    dependencies:
+      '@pe/core':
+        specifier: workspace:*
+        version: link:../core
 
-  packages/providers/base: {}
+  packages/providers/base:
+    dependencies:
+      '@pe/provider-sdk':
+        specifier: workspace:*
+        version: link:../../provider-sdk
 
-  packages/providers/eslint: {}
+  packages/providers/eslint:
+    dependencies:
+      '@pe/provider-base':
+        specifier: workspace:*
+        version: link:../base
+      '@pe/provider-sdk':
+        specifier: workspace:*
+        version: link:../../provider-sdk
 
-  packages/providers/ruff: {}
+  packages/providers/ruff:
+    dependencies:
+      '@pe/provider-base':
+        specifier: workspace:*
+        version: link:../base
+      '@pe/provider-sdk':
+        specifier: workspace:*
+        version: link:../../provider-sdk
 
-  packages/providers/tsc: {}
+  packages/providers/tsc:
+    dependencies:
+      '@pe/provider-base':
+        specifier: workspace:*
+        version: link:../base
+      '@pe/provider-sdk':
+        specifier: workspace:*
+        version: link:../../provider-sdk
 
-  packages/providers/vscode-realtime: {}
+  packages/providers/vscode-realtime:
+    dependencies:
+      '@pe/provider-sdk':
+        specifier: workspace:*
+        version: link:../../provider-sdk
 
   packages/scheduler:
     dependencies:

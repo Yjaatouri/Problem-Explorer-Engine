@@ -10,6 +10,12 @@
       "import": "./dist/index.js"
     }
   },
+  "scripts": {
+    "typecheck:tests": "tsc -p tsconfig.tests.json"
+  },
+  "dependencies": {
+    "@pe/core": "workspace:*"
+  },
   "publishConfig": {
     "access": "public"
   },
