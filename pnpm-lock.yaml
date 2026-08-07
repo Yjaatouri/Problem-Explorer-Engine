@@ -41,7 +41,15 @@ importers:
 
   packages/api: {}
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      jsonschema:
+        specifier: ^1.5.0
+        version: 1.5.0
+    devDependencies:
+      '@types/jsonschema':
+        specifier: ^1.1.1
+        version: 1.1.1
 
   packages/impact-analyzer: {}
 
@@ -501,6 +509,10 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/jsonschema@1.1.1':
+    resolution: {integrity: sha512-JPP6H7/h/uXzAow+NbD/jqA3tA1Fj3u2C0KiFAlQ+rtl2QhozxMEz0aPjKnr4YyAB8/6s0Xm9UPa0fFUB0y1OA==}
+    deprecated: This is a stub types definition for jsonschema (https://github.com/tdegrunt/jsonschema). jsonschema provides its own type definitions, so you don't need @types/jsonschema installed!
+
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
@@ -952,6 +964,9 @@ packages:
 
   jsonfile@4.0.0:
     resolution: {integrity: sha512-m6F1R3z8jjlf2imQHS2Qez5sjKWQzbuuhuJ/FKYFRZvPE3PuHcSMVZzfsLhGVOkfd20obL5SWEBew5ShlquNxg==}
+
+  jsonschema@1.5.0:
+    resolution: {integrity: sha512-K+A9hhqbn0f3pJX17Q/7H6yQfD/5OXgdrR5UE12gMXCiN9D5Xq2o5mddV2QEcX/bjla99ASsAAQUyMCCRWAEhw==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -1755,6 +1770,10 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/jsonschema@1.1.1':
+    dependencies:
+      jsonschema: 1.5.0
+
   '@types/node@12.20.55': {}
 
   '@types/node@20.19.43':
@@ -2252,6 +2271,8 @@ snapshots:
   jsonfile@4.0.0:
     optionalDependencies:
       graceful-fs: 4.2.11
+
+  jsonschema@1.5.0: {}
 
   keyv@4.5.4:
     dependencies:
