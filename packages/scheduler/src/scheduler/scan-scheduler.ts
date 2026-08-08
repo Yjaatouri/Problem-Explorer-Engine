@@ -253,7 +253,6 @@ export class ScanScheduler {
       }
       const cost = provider.capabilities.cost;
       if (!this.hasFreeSlot(cost)) {
-        console.error('[probe] drain: no free slot for', cost);
         break;
       }
       this.queue.remove(job.id);

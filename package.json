@@ -16,6 +16,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:integration": "pnpm -r --if-present run test:integration",
+    "bench": "node scripts/bench/engine-bench.mjs",
     "check:deps": "node scripts/check-dependency-graph.mjs",
     "clean": "rimraf \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
     "changeset": "changeset",

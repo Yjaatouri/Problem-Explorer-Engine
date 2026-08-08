@@ -45,7 +45,7 @@ export class LRUCache<K, V> {
   }
 }
 
-const uriKeyCache = new LRUCache<string, string>(10_000);
+const uriKeyCache = new WeakMap<object, string>();
 
 /**
  * Produce a canonical string key for a URI so equivalent URIs map to the
@@ -56,12 +56,15 @@ const uriKeyCache = new LRUCache<string, string>(10_000);
  * - `file:///home/user/file.ts` and `file:///home/user/file.ts/` → same key
  */
 export function normalizeUriKey(uri: Uri): string {
-  const input = uri.toString();
-  const cached = uriKeyCache.get(input);
-  if (cached !== undefined) {
-    return cached;
+  const cacheable = typeof uri === 'object' && uri !== null;
+  if (cacheable) {
+    const cached = uriKeyCache.get(uri);
+    if (cached !== undefined) {
+      return cached;
+    }
   }
 
+  const input = uri.toString();
   let key = input;
 
   // Normalize Windows drive letter casing + encoding: file:///C%3A/..., file:///c%3A/...,
@@ -76,7 +79,9 @@ export function normalizeUriKey(uri: Uri): string {
     key = key.slice(0, -1);
   }
 
-  uriKeyCache.set(input, key);
+  if (cacheable) {
+    uriKeyCache.set(uri, key);
+  }
   return key;
 }
 
@@ -92,7 +97,7 @@ export function getParentKey(key: string): string {
   return key.slice(0, lastSlash);
 }
 
-/** Clear the URI key cache (test isolation / config changes) */
+/** Clear the URI key cache (no-op: WeakMap entries die with their URIs). */
 export function clearUriKeyCache(): void {
-  uriKeyCache.clear();
+  // WeakMap — nothing to clear; kept for API compatibility.
 }
