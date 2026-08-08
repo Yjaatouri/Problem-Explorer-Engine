@@ -1,7 +1,7 @@
 {
   "name": "@pe/scheduler",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "private": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -17,5 +17,11 @@
     "@pe/core": "workspace:*",
     "@pe/store": "workspace:*"
   },
-  "type": "module"
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@pe/provider-base",
   "description": "Reusable implementation kit for concrete providers: executable discovery, argument building, stdout parsing, and schema validation.",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,5 +20,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "module"
+  "type": "module",
+  "files": [
+    "dist"
+  ]
 }

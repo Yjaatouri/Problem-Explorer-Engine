@@ -4,6 +4,11 @@
   "commit": false,
   "fixed": [
     [
+      "@pe/core",
+      "@pe/store",
+      "@pe/scheduler",
+      "@pe/workspace-index",
+      "@pe/impact-analyzer",
       "@pe/api",
       "@pe/provider-sdk",
       "@pe/provider-base",
@@ -17,12 +22,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@pe/core",
-    "@pe/store",
-    "@pe/scheduler",
-    "@pe/workspace-index",
-    "@pe/impact-analyzer",
-    "@pe/api"
-  ]
+  "ignore": []
 }
