@@ -78,6 +78,12 @@ jobs:
       # Tests resolve @pe/* through dist (§ 3.3); each job is a fresh
       # checkout, so the engine must be built here — not just in `build`.
       - run: pnpm build
+      # The M6 e2e (packages/api/tests/e2e-ruff) runs the real ruff binary;
+      # there is no official npm package — Astral's standalone installer.
+      - name: Install ruff (python provider e2e)
+        run: |
+          curl -LsSf https://astral.sh/ruff/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: pnpm test
 
   test-integration:

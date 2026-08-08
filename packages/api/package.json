@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@pe/provider-eslint": "workspace:*",
+    "@pe/provider-ruff": "workspace:*",
     "@pe/provider-tsc": "workspace:*"
   },
   "publishConfig": {
